@@ -7,7 +7,11 @@ def comparar_csv(archivo1, archivo2, archivo_salida):
         with open(archivo1, 'r') as file1:
             reader1 = csv.DictReader(file1)
             for row in reader1:
-                datos_archivo1[row['controlId']] = row['counter']
+                datos_archivo1[row['controlId']] = {
+                    'counter': row['counter'],
+                    'framework': row['framework'],
+                    'status': row['status']
+                }
 
         # Cargar el segundo archivo en un diccionario
         datos_archivo2 = {}
@@ -18,20 +22,28 @@ def comparar_csv(archivo1, archivo2, archivo_salida):
 
         # Abrir el archivo de salida
         with open(archivo_salida, 'w', newline='') as salida:
-            fieldnames = ['controlId', 'counter_archivo1', 'counter_archivo2']
+            fieldnames = ['controlId', 'counter_archivo1', 'framework', 'status', 'counter_archivo2']
             writer = csv.DictWriter(salida, fieldnames=fieldnames)
             writer.writeheader()
 
             # Comparar y generar el archivo de salida
-            for control_id, counter1 in datos_archivo1.items():
+            for control_id, datos in datos_archivo1.items():
+                counter1 = datos['counter']
+                framework = datos['framework']
+                status = datos['status']
+
                 if control_id in datos_archivo2:
                     counter2 = datos_archivo2[control_id]
                 else:
                     counter2 = '0'  # Si no está en el segundo archivo, poner '0'
                 
-                writer.writerow({'controlId': control_id, 
-                                 'counter_archivo1': counter1, 
-                                 'counter_archivo2': counter2})
+                writer.writerow({
+                    'controlId': control_id, 
+                    'counter_archivo1': counter1, 
+                    'framework': framework, 
+                    'status': status, 
+                    'counter_archivo2': counter2
+                })
 
         print(f"Archivo '{archivo_salida}' generado con éxito.")
     except FileNotFoundError as e:
@@ -40,7 +52,7 @@ def comparar_csv(archivo1, archivo2, archivo_salida):
         print(f"Error: {str(e)}")
 
 # Nombres de los archivos
-archivo_referencia = 'archivo1.csv'  # Archivo con más controles
+archivo_referencia = 'archivo1.csv'  # Archivo con más controles (incluye framework y status)
 archivo_comparacion = 'archivo2.csv'  # Archivo con menos controles
 archivo_salida = 'resultado.csv'  # Archivo de salida
 
